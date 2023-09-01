@@ -88,6 +88,8 @@ def message_to_screen(msg, color, y_displace=0, size="small"):
     gameDisplay.blit(textSurf, textRect)
 
 
+
+
 def tank(x, y, turPos):
     x = int(x)
     y = int(y)
@@ -179,6 +181,9 @@ def enemy_tank(x, y, turPos):
     return possibleTurrets[turPos]
 
 
+
+
+
 def game_controls():
     gcont = True
 
@@ -206,7 +211,8 @@ def game_controls():
         clock.tick(15)
 
 
-def button(text, x, y, width, height, inactive_color, active_color, action=None,size=" "):
+
+def button(text, x, y, width, height, inactive_color, active_color,  action=None,  size=" ", ):
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     # print(click)
@@ -216,7 +222,7 @@ def button(text, x, y, width, height, inactive_color, active_color, action=None,
             if action == "quit":
                 pygame.quit()
                 quit()
-
+            
             if action == "controls":
                 game_controls()
 
@@ -227,7 +233,7 @@ def button(text, x, y, width, height, inactive_color, active_color, action=None,
                 game_intro()
 
             if action == "shop":
-                game_intro()
+                shop()
 
     else:
         pygame.draw.rect(gameDisplay, inactive_color, (x, y, width, height))
@@ -250,10 +256,10 @@ def pause():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     paused = False
-                elif event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
-
+        
+        button("Main", 350, 500, 100, 50, yellow, light_yellow, action="main")
+        button("Quit", 550, 500, 100, 50, red, light_red, action="quit")
+        pygame.display.update()
         clock.tick(5)
 
 
@@ -471,10 +477,8 @@ def power(level):
     text = smallfont.render("Power: " + str(level) + "%", True, wheat)
     gameDisplay.blit(text, [display_width / 2, 0])
 
-
 def shop():
-    global coins
-
+    
     shopExit = False
 
     while not shopExit:
@@ -483,19 +487,19 @@ def shop():
                 pygame.quit()
                 quit()
 
+            pygame.display.update()
+
         gameDisplay.fill(yellow)
         message_to_screen("Shop", white, -100, size="large")
 
-       
-        item_prices = [random.randint(5, 20) for _ in range(5)]
-        for idx, price in enumerate(item_prices):
-            item_text = f"Item {idx + 1}: Price {price} coins"
-            button(item_text, 250, 100 + idx * 50, 200, 40, wheat, light_green, action="buy", item_idx=idx)
-
-        button("Back", 350, 500, 100, 50, wheat, light_yellow, action="back", size="vsmall")
-
+        
+        button("Main", 350, 500, 100, 50, wheat, light_yellow, action="main")
+        
         pygame.display.update()
         clock.tick(15)
+        
+
+
 
 def game_intro():
     intro = True
@@ -526,7 +530,7 @@ def game_intro():
 
         button("Play", 150, 500, 100, 50, wheat, light_green, action="play",size="vsmall")
         button("Controls", 250, 500, 100, 50, wheat, light_yellow, action="controls",size="vsmall")
-        button("Shop", 350, 500, 100, 50, wheat, light_red, action="shop", size="vsmall")
+        button("Shop", 350, 500, 100, 50, wheat, light_green, action="shop", size="vsmall")
         button("Quit", 550, 500, 100, 50, wheat, light_red, action="quit",size="vsmall")
 
         pygame.display.update()
@@ -572,8 +576,8 @@ def you_win():
         message_to_screen("Congratulations!", wheat, -30)
 
         button("play Again", 150, 500, 150, 50, wheat, light_green, action="play")
-        button("controls", 350, 500, 100, 50, wheat, light_yellow, action="controls")
-        button("Shop", 250, 600, 100, 50, wheat, light_yellow, action="shop", size="vsmall")
+        button("controls", 250, 500, 100, 50, wheat, light_yellow, action="controls")
+        button("Shop", 350, 500, 100, 50, wheat, light_yellow, action="shop")
         button("quit", 550, 500, 100, 50, wheat, light_red, action="quit")
 
         pygame.display.update()
@@ -723,6 +727,12 @@ def gameLoop():
         mainTankX += tankMove
 
         currentTurPos += changeTur
+        
+        
+        
+
+        gameDisplay.fill(yellow)
+        message_to_screen("Shop", white, -100, size="large")
 
         if player_health < 1:
             game_over()
@@ -761,6 +771,8 @@ def gameLoop():
         elif enemy_health < 1:
             you_win()
 
+        
+
         show_coins(coins)
 
         pygame.display.update()
@@ -772,4 +784,4 @@ def gameLoop():
     quit()
 
 game_intro()
-gameLoop() 
+gameLoop()  
