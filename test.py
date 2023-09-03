@@ -1,6 +1,10 @@
 import pygame
 import time
 import random
+import sys
+
+desired_recursion_limit = 50000
+sys.setrecursionlimit(desired_recursion_limit)
 
 pygame.init()
 
@@ -183,7 +187,6 @@ def enemy_tank(x, y, turPos):
 
 
 
-
 def game_controls():
     gcont = True
 
@@ -208,20 +211,51 @@ def game_controls():
 
         pygame.display.update()
 
-        clock.tick(15)
+        clock.tick(100)
 
+def shop():
+    global coins
+    
 
+    shopExit = False
+    
+    
+    while not shopExit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+
+        
+
+        gameDisplay.fill(yellow)
+        show_coins(coins)
+        
+        message_to_screen("Shop", white, -100, size="large")
+
+        
+        button("Main", 350, 500, 100, 50, wheat, light_yellow, action="main", size="vsmall")
+        
+        pygame.display.update()
+        clock.tick(60)
+        
 
 def button(text, x, y, width, height, inactive_color, active_color,  action=None,  size=" ", ):
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     # print(click)
-    if x + width > cur[0] > x and y + height > cur[1] > y:
-        pygame.draw.rect(gameDisplay, active_color, (x, y, width, height))
+    button_rect = pygame.Rect(x, y, width, height)
+    
+    if button_rect.collidepoint(cur):
+        pygame.draw.rect(gameDisplay, active_color, button_rect)
         if click[0] == 1 and action != None:
             if action == "quit":
                 pygame.quit()
                 quit()
+            
+            if action == "main":
+                game_intro()
             
             if action == "controls":
                 game_controls()
@@ -229,9 +263,7 @@ def button(text, x, y, width, height, inactive_color, active_color,  action=None
             if action == "play":
                 gameLoop()
 
-            if action == "main":
-                game_intro()
-
+            
             if action == "shop":
                 shop()
 
@@ -256,11 +288,12 @@ def pause():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     paused = False
-        
+                
         button("Main", 350, 500, 100, 50, yellow, light_yellow, action="main")
         button("Quit", 550, 500, 100, 50, red, light_red, action="quit")
         pygame.display.update()
-        clock.tick(5)
+        
+        clock.tick(60)
 
 
 def barrier(xlocation, randomHeight, barrier_width):
@@ -477,27 +510,7 @@ def power(level):
     text = smallfont.render("Power: " + str(level) + "%", True, wheat)
     gameDisplay.blit(text, [display_width / 2, 0])
 
-def shop():
-    
-    shopExit = False
 
-    while not shopExit:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-
-            pygame.display.update()
-
-        gameDisplay.fill(yellow)
-        message_to_screen("Shop", white, -100, size="large")
-
-        
-        button("Main", 350, 500, 100, 50, wheat, light_yellow, action="main")
-        
-        pygame.display.update()
-        clock.tick(15)
-        
 
 
 
@@ -511,13 +524,7 @@ def game_intro():
                 pygame.quit()
                 quit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_c:
-                    intro = False
-                elif event.key == pygame.K_q:
-
-                    pygame.quit()
-                    quit()
+            
 
         gameDisplay.fill(yellow)
 
@@ -528,14 +535,34 @@ def game_intro():
         # message_to_screen("Press C to play, P to pause or Q to quit",black,180)
 
 
-        button("Play", 150, 500, 100, 50, wheat, light_green, action="play",size="vsmall")
-        button("Controls", 250, 500, 100, 50, wheat, light_yellow, action="controls",size="vsmall")
-        button("Shop", 350, 500, 100, 50, wheat, light_green, action="shop", size="vsmall")
-        button("Quit", 550, 500, 100, 50, wheat, light_red, action="quit",size="vsmall")
+        button("Play", 150, 500, 100, 50, wheat, light_green, action="play")
+        button("Controls", 250, 500, 100, 50, wheat, light_yellow, action="controls")
+        button("Shop", 350, 500, 100, 50, wheat, light_green, action="shop")
+        button("Quit", 550, 500, 100, 50, wheat, light_red, action="quit")
 
         pygame.display.update()
 
-        clock.tick(15)
+        clock.tick(60)
+def load_coins():
+    try:
+        with open("coins.txt", "r") as file:
+            coins = int(file.read())
+    except FileNotFoundError:
+        coins = 0
+    return coins
+def save_coins(coins):
+    with open("coins.txt", "w") as file:
+        file.write(str(coins))
+def add_coins(amount):
+    global coins
+    coins += amount
+    save_coins(coins)
+
+coins = load_coins()
+
+def show_coins(coins):
+    text = smallfont.render("Coins: " + str(coins), True, white)
+    gameDisplay.blit(text, [display_width - 150, 0])
 
 
 def game_over():
@@ -576,7 +603,7 @@ def you_win():
         message_to_screen("Congratulations!", wheat, -30)
 
         button("play Again", 150, 500, 150, 50, wheat, light_green, action="play")
-        button("controls", 250, 500, 100, 50, wheat, light_yellow, action="controls")
+        button("Controls", 250, 500, 100, 50, wheat, light_yellow, action="controls")
         button("Shop", 350, 500, 100, 50, wheat, light_yellow, action="shop")
         button("quit", 550, 500, 100, 50, wheat, light_red, action="quit")
 
@@ -627,7 +654,14 @@ def gameLoop():
 
     fire_power = 50
     power_change = 0
+    
 
+    # 여기에 게임 화면을 그리는 코드가 있을 것입니다.
+
+    # "Main" 버튼 클릭 이벤트 처리 코드를 여기에 추가합니다.
+
+    pygame.display.update()
+    clock.tick(15)
     xlocation = (display_width / 2) + random.randint(-0.1 * display_width, 0.1 * display_width)
     randomHeight = random.randrange(display_height * 0.1, display_height * 0.6)
 
@@ -727,12 +761,6 @@ def gameLoop():
         mainTankX += tankMove
 
         currentTurPos += changeTur
-        
-        
-        
-
-        gameDisplay.fill(yellow)
-        message_to_screen("Shop", white, -100, size="large")
 
         if player_health < 1:
             game_over()
@@ -771,8 +799,6 @@ def gameLoop():
         elif enemy_health < 1:
             you_win()
 
-        
-
         show_coins(coins)
 
         pygame.display.update()
@@ -784,4 +810,4 @@ def gameLoop():
     quit()
 
 game_intro()
-gameLoop()  
+gameLoop() 
